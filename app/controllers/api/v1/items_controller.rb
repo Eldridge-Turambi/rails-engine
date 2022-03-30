@@ -26,8 +26,19 @@ class Api::V1::ItemsController < ApplicationController
     end
   end
 
-  private
+  def update
+    item = Item.find(params[:id])
 
+    if item.update(item_params)
+      render json: ItemSerializer.new(item)
+    else
+      render status: 404
+    end
+  end
+
+  
+
+  private
   def item_params
     params.require(:item).permit(:name, :description, :unit_price, :merchant_id)
   end

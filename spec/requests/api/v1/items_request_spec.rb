@@ -100,4 +100,22 @@ RSpec.describe 'Expose Items API' do
     expect(Item.count).to eq(0)
     expect{Item.find(item_id)}.to raise_error(ActiveRecord::RecordNotFound)
   end
+
+  it 'can edit/update an existing item' do
+    merchant1 = create(:merchant)
+    item1 = create(:item, merchant_id: merchant1.id)
+
+    updated_item_params = {name: 'Rare, Awesomely Made Graphics Card'}
+
+    header_info = {"CONTENT_TYPE" => "application/json"}
+
+    patch "/api/v1/items/#{item1.id}", headers: header_info, params: JSON.generate({item: updated_item_params})
+
+    item = Item.find_by(id: item1.id)
+
+    expect(response).to be_successful
+    expect(item.name).to eq('Rare, Awesomely Made Graphics Card')
+  end
+
+  
 end
