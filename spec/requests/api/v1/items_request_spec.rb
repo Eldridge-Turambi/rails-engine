@@ -40,4 +40,28 @@ RSpec.describe 'Expose Items API' do
       expect(item[:attributes][:merchant_id]).to be_an(Integer)
     end
   end
+
+  it 'sends json for one item (items show)' do
+    merchant1 = create(:merchant)
+    item1 = merchant1.items.create(name: 'name1', description: 'description1', unit_price: 100.0)
+
+    get "/api/v1/items/#{item1.id}"
+
+    expect(response).to be_successful
+
+    item_parsed_json = JSON.parse(response.body, symbolize_names: true)
+
+    expect(item_parsed_json).to have_key(:data)
+
+    expect(item_parsed_json[:data]).to have_key(:id)
+    expect(item_parsed_json[:data]).to have_key(:type)
+    expect(item_parsed_json[:data]).to have_key(:attributes)
+
+    expect(item_parsed_json[:data][:attributes]).to have_key(:name)
+    expect(item_parsed_json[:data][:attributes]).to have_key(:description)
+    expect(item_parsed_json[:data][:attributes]).to have_key(:unit_price)
+    expect(item_parsed_json[:data][:attributes]).to have_key(:merchant_id)
+    
+    expect(item_parsed_json[:data][:attributes][:merchant_id]).to eq(merchant1.id)
+  end
 end
