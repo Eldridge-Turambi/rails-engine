@@ -117,5 +117,20 @@ RSpec.describe 'Expose Items API' do
     expect(item.name).to eq('Rare, Awesomely Made Graphics Card')
   end
 
-  
+  it 'sends merchant data for a given item ID' do
+    merchant1 = create(:merchant)
+    item1 = create(:item, merchant_id: merchant1.id)
+
+    get "/api/v1/items/#{item1.id}/merchant"
+    expect(response).to be_successful
+    parsed_merchant = JSON.parse(response.body, symbolize_names: true)
+
+    expect(parsed_merchant).to have_key(:data)
+    expect(parsed_merchant[:data]).to have_key(:id)
+    expect(parsed_merchant[:data][:id]).to eq(merchant1.id.to_s)
+    expect(parsed_merchant[:data]).to have_key(:type)
+    expect(parsed_merchant[:data]).to have_key(:attributes)
+    expect(parsed_merchant[:data][:attributes]).to have_key(:name)
+    expect(parsed_merchant[:data][:attributes][:name]).to eq(merchant1.name)
+  end
 end
