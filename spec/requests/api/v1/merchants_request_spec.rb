@@ -78,4 +78,41 @@ RSpec.describe 'Expose Merchants API' do
       expect(item[:attributes][:merchant_id]).to eq(merchant1.id)
     end
   end
+
+  it 'finds one Merchant given a search params' do
+    merchant1 = create(:merchant, name: "warhead walmart")
+    merchant2 = create(:merchant, name: "amazon flex")
+    merchant3 = create(:merchant, name: "hank propane")
+    merchant4 = create(:merchant, name: "hank propane accesccories")
+
+    get "/api/v1/merchants/find?name=propane"
+
+    expect(response).to be_successful
+
+    parsed_response = JSON.parse(response.body, symbolize_names: true)
+
+    expect(parsed_response).to have_key(:data)
+    expect(parsed_response[:data]).to have_key(:id)
+    expect(parsed_response[:data]).to have_key(:type)
+    expect(parsed_response[:data]).to have_key(:attributes)
+    expect(parsed_response[:data][:attributes]).to have_key(:name)
+    expect(parsed_response[:data][:attributes][:name]).to eq(merchant3.name)
+  end
+
+  it 'Sad path: finds one Merchant given a search params' do
+    merchant1 = create(:merchant, name: "warhead walmart")
+    merchant2 = create(:merchant, name: "amazon flex")
+    merchant3 = create(:merchant, name: "hank propane")
+    merchant4 = create(:merchant, name: "hank propane accesccories")
+
+    get "/api/v1/merchants/find?name=safeway"
+
+    expect(response).to be_successful
+
+    parsed_response = JSON.parse(response.body, symbolize_names: true)
+
+    expect(parsed_response).to have_key(:data)
+    expect(parsed_response[:data]).to have_key(:message)
+    expect(parsed_response[:data][:message]).to eq("Merchant not found")
+  end
 end
