@@ -133,4 +133,65 @@ RSpec.describe 'Expose Items API' do
     expect(parsed_merchant[:data][:attributes]).to have_key(:name)
     expect(parsed_merchant[:data][:attributes][:name]).to eq(merchant1.name)
   end
+
+  it 'finds all items that match search params given' do
+    merchant1 = create(:merchant)
+    merchant2 = create(:merchant)
+
+    item1 = create(:item, merchant_id: merchant1.id, name: 'propane tank')
+    item2 = create(:item, merchant_id: merchant1.id, name: 'propane tube')
+    item3 = create(:item, merchant_id: merchant1.id, name: 'original copy of skyrim')
+    item4 = create(:item, merchant_id: merchant1.id, name: 'fire starter')
+
+    item5 = create(:item, merchant_id: merchant2.id, name: 'propane pusher')
+    item6 = create(:item, merchant_id: merchant2.id, name: 'starter kit')
+    item7 = create(:item, merchant_id: merchant2.id, name: '20th version of skyrim')
+    item8 = create(:item, merchant_id: merchant2.id, name: 'cigarettes')
+
+    get "/api/v1/items/find_all?name=skyrim"
+
+    expect(response).to be_successful
+
+    parsed_response = JSON.parse(response.body, symbolize_names: true)
+
+    expect(parsed_response).to have_key(:data)
+    expect(parsed_response[:data].count).to eq(2)
+    expect(parsed_response[:data][0][:attributes][:name]).to eq('original copy of skyrim')
+    expect(parsed_response[:data][1][:attributes][:name]).to eq('20th version of skyrim')
+
+    parsed_response[:data].each do |item|
+      expect(item).to have_key(:id)
+      expect(item).to have_key(:type)
+      expect(item).to have_key(:attributes)
+      expect(item[:attributes]).to have_key(:name)
+      expect(item[:attributes]).to have_key(:description)
+      expect(item[:attributes]).to have_key(:unit_price)
+      expect(item[:attributes]).to have_key(:merchant_id)
+    end
+  end
+
+  it 'Sad Path: Finds no items that match search params given' do
+    merchant1 = create(:merchant)
+    merchant2 = create(:merchant)
+
+    item1 = create(:item, merchant_id: merchant1.id, name: 'propane tank')
+    item2 = create(:item, merchant_id: merchant1.id, name: 'propane tube')
+    item3 = create(:item, merchant_id: merchant1.id, name: 'original copy of skyrim')
+    item4 = create(:item, merchant_id: merchant1.id, name: 'fire starter')
+
+    item5 = create(:item, merchant_id: merchant2.id, name: 'propane pusher')
+    item6 = create(:item, merchant_id: merchant2.id, name: 'starter kit')
+    item7 = create(:item, merchant_id: merchant2.id, name: '20th version of skyrim')
+    item8 = create(:item, merchant_id: merchant2.id, name: 'cigarettes')
+
+    get "/api/v1/items/find_all?name=noname"
+
+    expect(response).to be_successful
+
+    parsed_response = JSON.parse(response.body, symbolize_names: true)
+
+    expect(parsed_response).to have_key(:data)
+    expect(parsed_response[:data]).to have_key(:message)
+    expect(parsed_response[:data][:message]).to eq("No items match search param")
+  end
 end
