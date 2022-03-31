@@ -12,11 +12,14 @@ class Api::V1::SearchesController < ApplicationController
 
   def find_all_items
     found_items = Item.where("name ILIKE ?", "%#{params[:name]}%")
+    render json: ItemSerializer.new(found_items)
 
-    if found_items.empty?
-      render json: { data: {message: 'No items match search param'} }
-    else
-      render json: ItemSerializer.new(found_items)
-    end
+    ## Below code does not pass all postman for some reason
+    
+    # if found_items.empty?
+    #   render json: { data: {message: 'No items match search param'} }
+    # else
+    #   render json: ItemSerializer.new(found_items)
+    # end
   end
 end
